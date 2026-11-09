@@ -1,0 +1,394 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Reel Index</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap">
+<style>
+/* Layout: one Poppins voice on warm white. Hero has a mouse-driven playhead, cards scrub on hover, a cursor label follows the pointer, clicks leave a "cut" mark. */
+:root {
+  --bg: #F7F4EE;
+  --surface: #EBE6DC;
+  --fg: #1B1916;
+  --muted: #7C756A;
+  --line: #DCD5C8;
+  --accent: #FF4B2B;
+  --font: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #14120F; --surface: #1E1B17; --fg: #F2EEE6; --muted: #8E877B; --line: #2C2822; --accent: #FF6A4D; color-scheme: dark }
+}
+:root[data-theme="dark"] { --bg: #14120F; --surface: #1E1B17; --fg: #F2EEE6; --muted: #8E877B; --line: #2C2822; --accent: #FF6A4D; color-scheme: dark }
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 400 14px/1.6 var(--font);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 96px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; }
+a { color: inherit; text-decoration: none; }
+button { font-family: var(--font); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.label { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* top bar */
+header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 22px; }
+.brand { display: flex; align-items: center; gap: 10px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.rec { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: blink 1.6s steps(2, jump-none) infinite; }
+@keyframes blink { 50% { opacity: .15; } }
+nav { display: flex; gap: 22px; }
+nav a { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 4px 0; border-bottom: 1px solid transparent; }
+nav a:hover { color: var(--fg); border-bottom-color: var(--accent); }
+
+/* hero */
+.hero { position: relative; padding-block: clamp(48px, 9vw, 120px) clamp(40px, 6vw, 80px); display: grid; gap: 30px; cursor: crosshair; }
+h1 { margin: 0; font-weight: 300; font-size: clamp(38px, 8.6vw, 116px); line-height: .98; letter-spacing: -.03em; text-wrap: balance; }
+h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.hero-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px 40px; align-items: end; }
+.hero p { margin: 0; max-width: 40ch; color: var(--muted); }
+.stats { display: flex; gap: 28px; }
+.stats div { display: grid; gap: 2px; }
+.stats b { font-weight: 400; font-size: 26px; line-height: 1.1; letter-spacing: -.03em; }
+.hint { position: absolute; right: 0; top: 14px; }
+
+/* hero playhead that follows the mouse */
+.ph { position: absolute; top: 0; bottom: 0; left: 0; width: 1px; background: var(--accent); pointer-events: none; opacity: 0; transition: opacity .2s; will-change: transform; }
+.ph::before { content: ""; position: absolute; top: 0; left: -5px; width: 11px; height: 9px; background: var(--accent); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.ph span { position: absolute; top: 14px; left: 8px; font-size: 11px; letter-spacing: .06em; font-variant-numeric: tabular-nums; color: var(--accent); background: var(--bg); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
+.hero.live .ph { opacity: 1; }
+
+.bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding-block: 14px; border-block: 1px solid var(--line); margin-bottom: 28px; }
+
+/* grid */
+.grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px 14px; perspective: 900px; }
+.card { display: grid; gap: 10px; text-align: left; background: none; border: 0; padding: 0; color: inherit; cursor: pointer; font: inherit; min-width: 0; }
+.frame { --rx: 0deg; --ry: 0deg; position: relative; aspect-ratio: 9 / 16; max-width: 100%; border-radius: 14px; overflow: hidden; background: var(--surface); isolation: isolate; transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .25s ease-out, box-shadow .25s; box-shadow: 0 0 0 rgba(0,0,0,0); }
+.card:hover .frame { box-shadow: 0 18px 36px -18px rgba(40, 25, 10, .45); }
+.frame .poster { position: absolute; inset: -6%; transition: transform .25s ease-out; transform: translate(var(--px, 0), var(--py, 0)) scale(1.06); }
+.frame video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.frame::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); pointer-events: none; }
+.tc { position: absolute; left: 10px; top: 10px; font-size: 10px; letter-spacing: .06em; font-variant-numeric: tabular-nums; color: #fff; background: rgba(0,0,0,.4); padding: 3px 7px; border-radius: 6px; backdrop-filter: blur(6px); }
+.scrub { position: absolute; left: 10px; right: 10px; bottom: 12px; height: 3px; background: rgba(255,255,255,.3); border-radius: 3px; overflow: hidden; opacity: 0; transition: opacity .2s; }
+.scrub i { display: block; height: 100%; width: 0; background: #fff; }
+.card:hover .scrub { opacity: 1; }
+.sample { position: absolute; left: 10px; bottom: 24px; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.72); }
+.meta { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.meta h3 { margin: 0; font-weight: 500; font-size: 13px; }
+
+/* about / contact */
+section { padding-top: clamp(64px, 10vw, 120px); }
+.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 32px 60px; }
+h2 { margin: 0; font-weight: 300; font-size: clamp(30px, 4.6vw, 54px); line-height: 1; letter-spacing: -.03em; }
+.about p { margin: 0 0 14px; max-width: 54ch; font-size: 15px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.tools span { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); transition: transform .2s, color .2s; }
+.tools span:hover { transform: translateY(-3px) rotate(2deg); color: var(--fg); }
+.contact a.big { display: inline-block; font-weight: 300; font-size: clamp(22px, 4.6vw, 52px); line-height: 1.1; letter-spacing: -.03em; border-bottom: 2px solid var(--accent); padding-bottom: 4px; word-break: break-all; }
+.contact a.big:hover { color: var(--accent); }
+.links { display: flex; flex-wrap: wrap; gap: 8px 26px; margin-top: 26px; }
+.links a { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.links a:hover { color: var(--fg); }
+footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding-block: 60px 0; }
+
+/* fixed timeline */
+.timeline { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-top: 1px solid var(--line); }
+.tl-in { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px; align-items: center; }
+.tl-time { font-size: 12px; font-variant-numeric: tabular-nums; min-width: 96px; }
+.track { position: relative; height: 22px; background: repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 12px) bottom/100% 7px no-repeat; }
+.track .clips { position: absolute; inset: 0 0 8px; display: flex; gap: 3px; }
+.track .clips i { flex: 1; border-radius: 3px; background: var(--surface); border: 1px solid var(--line); }
+.track .clips i.on { background: var(--accent); border-color: var(--accent); opacity: .85; }
+.head { position: absolute; top: -3px; bottom: 0; width: 2px; background: var(--accent); left: 0; }
+.head::before { content: ""; position: absolute; top: 0; left: -4px; width: 10px; height: 8px; background: var(--accent); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.theme { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 6px 11px; cursor: pointer; }
+.theme:hover { color: var(--fg); }
+
+/* player */
+.modal[hidden] { display: none; }
+.modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 84%, transparent); backdrop-filter: blur(18px); }
+.player { display: grid; grid-template-columns: auto minmax(0, 280px); gap: 28px; align-items: end; max-width: 100%; }
+.pframe { position: relative; height: min(78vh, 700px); aspect-ratio: 9 / 16; max-width: calc(100vw - 32px); border-radius: 18px; overflow: hidden; background: var(--surface); }
+.pframe .poster { position: absolute; inset: 0; }
+.pframe video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+.pnote { position: absolute; inset: auto 14px 14px; color: #fff; font-size: 11px; letter-spacing: .05em; background: rgba(0,0,0,.45); padding: 10px 12px; border-radius: 10px; backdrop-filter: blur(6px); text-transform: uppercase; }
+.pinfo { display: grid; gap: 14px; align-self: end; padding-bottom: 6px; }
+.pinfo h3 { margin: 0; font-weight: 300; font-size: 34px; line-height: 1; letter-spacing: -.03em; }
+.pinfo p { margin: 0; color: var(--muted); }
+.close { justify-self: start; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; background: var(--fg); color: var(--bg); border: 0; border-radius: 999px; padding: 9px 16px; cursor: pointer; }
+
+/* mouse follower + click marks (fine pointers only) */
+.cur { position: fixed; left: 0; top: 0; z-index: 90; pointer-events: none; display: none; will-change: transform; }
+.cur .ring { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border: 1.5px solid var(--accent); border-radius: 50%; transition: width .2s, height .2s, left .2s, top .2s, background .2s; }
+.cur .tag { position: absolute; left: 16px; top: 14px; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; color: var(--bg); background: var(--fg); padding: 3px 8px; border-radius: 999px; opacity: 0; transform: translateY(4px); transition: opacity .15s, transform .15s; }
+.cur.big .ring { width: 54px; height: 54px; left: -27px; top: -27px; background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.cur.big .tag { opacity: 1; transform: none; }
+.cur.down .ring { width: 10px; height: 10px; left: -5px; top: -5px; background: var(--accent); }
+.burst { position: fixed; z-index: 89; pointer-events: none; }
+.burst i { position: absolute; left: -2px; top: -2px; width: 4px; height: 4px; background: var(--accent); border-radius: 1px; animation: fly .6s cubic-bezier(.1,.8,.3,1) forwards; }
+@keyframes fly { to { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); opacity: 0; width: 10px; } }
+.burst b { position: absolute; left: 10px; top: -26px; font-weight: 400; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); white-space: nowrap; animation: rise .7s ease-out forwards; }
+@keyframes rise { to { transform: translateY(-14px); opacity: 0; } }
+@media (hover: hover) and (pointer: fine) { .cur { display: block; } }
+
+@media (max-width: 900px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .split { grid-template-columns: 1fr; } }
+@media (max-width: 600px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 10px; }
+  nav { gap: 14px; }
+  .hint { display: none; }
+  .player { grid-template-columns: 1fr; justify-items: center; gap: 14px; }
+  .pframe { height: min(66vh, 600px); }
+  .pinfo { justify-items: center; text-align: center; }
+  .close { justify-self: center; }
+  .tl-time { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } .cur, .burst { display: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="rec"></span><span id="brandName">your name</span></div>
+    <nav aria-label="Sections"><a href="#work">work</a><a href="#about">about</a><a href="#contact">contact</a></nav>
+  </header>
+
+  <div class="hero" id="hero" data-cursor="cut">
+    <div class="ph" id="ph"><span id="phTime">00:00:00</span></div>
+    <span class="label hint">move your mouse. click to cut.</span>
+    <h1 id="heroTitle">short form,<br><em>cut</em> with care.</h1>
+    <div class="hero-row">
+      <p id="heroBlurb">Vertical video editor for reels, shorts and brand stories. Fast cuts, clean sound, edits that keep people watching to the last frame.</p>
+      <div class="stats" aria-label="Quick facts">
+        <div><b>120+</b><span class="label">edits delivered</span></div>
+        <div><b>9:16</b><span class="label">native format</span></div>
+        <div><b>24h</b><span class="label">first cut</span></div>
+      </div>
+    </div>
+  </div>
+
+  <main id="work">
+    <div class="bar"><span class="label">selected work</span><span class="label" id="count"></span></div>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <section id="about" class="split about">
+    <h2>about</h2>
+    <div>
+      <p>I cut vertical video for creators and small brands. I care about rhythm, the first two seconds, and sound that sits right under the picture.</p>
+      <p>Most projects start with raw footage and a rough idea. I turn them into a finished edit with captions, color and sound design, ready to post.</p>
+      <div class="tools" id="tools"></div>
+    </div>
+  </section>
+
+  <section id="contact" class="split contact">
+    <h2>say hi</h2>
+    <div>
+      <a class="big" id="mail" href="#contact">hello@yourname.com</a>
+      <div class="links" id="links"></div>
+    </div>
+  </section>
+
+  <footer><span class="label" id="foot">© 2026 your name</span><span class="label">all videos 9:16</span></footer>
+</div>
+
+<div class="timeline" aria-hidden="true">
+  <div class="tl-in">
+    <div class="tl-time" id="tcNow">00:00:00:00</div>
+    <div class="track"><div class="clips" id="clips"></div><div class="head" id="head"></div></div>
+    <button class="theme" id="themeBtn" type="button" aria-hidden="false">theme</button>
+  </div>
+</div>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-label="Video player">
+  <div class="player">
+    <div class="pframe" id="pframe"></div>
+    <div class="pinfo">
+      <span class="label" id="pTag"></span>
+      <h3 id="pTitle"></h3>
+      <p id="pDesc"></p>
+      <button class="close" id="closeBtn" type="button">close</button>
+    </div>
+  </div>
+</div>
+
+<div class="cur" id="cur" aria-hidden="true"><div class="ring"></div><div class="tag" id="curTag"></div></div>
+
+<script>
+/* ---------- EDIT THIS: your details and videos ---------- */
+const CONFIG = {
+  name: "your name",
+  email: "hello@yourname.com",
+  links: [
+    { label: "instagram", href: "https://instagram.com/" },
+    { label: "youtube", href: "https://youtube.com/" },
+    { label: "tiktok", href: "https://tiktok.com/" }
+  ],
+  tools: ["premiere pro", "after effects", "davinci resolve", "capcut", "audition"],
+  // src: path or URL to your vertical mp4. Leave "" to show a sample frame.
+  projects: [
+    { title: "reel 01", length: 24, hue: 14,  desc: "Add a short note about this edit.", src: "" },
+    { title: "reel 02",    length: 18, hue: 220, desc: "Add a short note about this edit.", src: "" },
+    { title: "reel 03",       length: 31, hue: 38,  desc: "Add a short note about this edit.", src: "" },
+    { title: "reel 04",        length: 27, hue: 330, desc: "Add a short note about this edit.", src: "" },
+    { title: "reel 05",    length: 15, hue: 265, desc: "Add a short note about this edit.", src: "" },
+    { title: "reel 06",       length: 42, hue: 160, desc: "Add a short note about this edit.", src: "" },
+    { title: "reel 07", length: 21, hue: 350, desc: "Add a short note about this edit.", src: "" },
+    { title: "reel 08",      length: 30, hue: 195, desc: "Add a short note about this edit.", src: "" }
+  ]
+};
+/* -------------------------------------------------------- */
+
+const $ = (s) => document.querySelector(s);
+const pad = (n, l = 2) => String(n).padStart(l, "0");
+const tc = (s) => "00:" + pad(Math.floor(s / 60)) + ":" + pad(Math.floor(s % 60));
+const posterStyle = (h) =>
+  `background:
+    radial-gradient(120% 70% at 20% 10%, hsl(${h} 85% 62% / .95), transparent 60%),
+    radial-gradient(90% 60% at 85% 95%, hsl(${(h + 40) % 360} 80% 38% / .95), transparent 65%),
+    linear-gradient(170deg, hsl(${h} 45% 22%), hsl(${(h + 20) % 360} 55% 10%));`;
+
+$("#brandName").textContent = CONFIG.name;
+$("#foot").textContent = "© 2026 " + CONFIG.name;
+$("#mail").textContent = CONFIG.email;
+$("#links").innerHTML = CONFIG.links.map(l => `<a href="${l.href}" target="_blank" rel="noopener" data-cursor="go">${l.label} ↗</a>`).join("");
+$("#tools").innerHTML = CONFIG.tools.map(t => `<span>${t}</span>`).join("");
+
+
+function renderGrid() {
+  const list = CONFIG.projects.map((p, i) => ({ ...p, i }));
+  $("#count").textContent = list.length + " clips";
+  $("#grid").innerHTML = list.map(p => `
+    <button class="card" type="button" data-i="${p.i}" data-cursor="play" aria-label="Play ${p.title}">
+      <div class="frame">
+        ${p.src ? `<video src="${p.src}" muted playsinline preload="metadata"></video>` : `<div class="poster" style="${posterStyle(p.hue)}"></div><span class="sample">sample frame</span>`}
+        <span class="tc">${tc(0)}</span>
+        <span class="scrub"><i></i></span>
+      </div>
+      <div class="meta"><h3>${p.title}</h3><span class="label">${tc(p.length)}</span></div>
+    </button>`).join("");
+}
+renderGrid();
+
+
+/* card hover: tilt toward the mouse and scrub the clip */
+const grid = $("#grid");
+grid.addEventListener("mousemove", (e) => {
+  const f = e.target.closest(".frame"); if (!f) return;
+  const card = f.closest(".card"), p = CONFIG.projects[+card.dataset.i];
+  const r = f.getBoundingClientRect();
+  const x = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+  const y = Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+  f.style.setProperty("--ry", ((x - .5) * 10) + "deg");
+  f.style.setProperty("--rx", ((.5 - y) * 10) + "deg");
+  const poster = f.querySelector(".poster");
+  if (poster) { poster.style.setProperty("--px", ((.5 - x) * 14) + "px"); poster.style.setProperty("--py", ((.5 - y) * 14) + "px"); }
+  f.querySelector(".scrub i").style.width = (x * 100) + "%";
+  f.querySelector(".tc").textContent = tc(x * p.length);
+  const v = f.querySelector("video");
+  if (v && v.duration) v.currentTime = x * v.duration;
+});
+grid.addEventListener("mouseout", (e) => {
+  const f = e.target.closest(".frame"); if (!f || f.contains(e.relatedTarget)) return;
+  f.style.setProperty("--rx", "0deg"); f.style.setProperty("--ry", "0deg");
+  const poster = f.querySelector(".poster");
+  if (poster) { poster.style.setProperty("--px", "0px"); poster.style.setProperty("--py", "0px"); }
+  f.querySelector(".scrub i").style.width = "0";
+  f.querySelector(".tc").textContent = tc(0);
+});
+
+/* hero playhead */
+const hero = $("#hero"), ph = $("#ph"), phTime = $("#phTime");
+hero.addEventListener("mousemove", (e) => {
+  const r = hero.getBoundingClientRect();
+  const x = Math.min(r.width, Math.max(0, e.clientX - r.left));
+  ph.style.transform = `translateX(${x}px)`;
+  const t = (x / r.width) * 60;
+  phTime.textContent = "00:" + pad(Math.floor(t / 60)) + ":" + pad(Math.floor(t % 60)) + ":" + pad(Math.floor((t % 1) * 24));
+  hero.classList.add("live");
+});
+hero.addEventListener("mouseleave", () => hero.classList.remove("live"));
+
+/* player */
+const modal = $("#modal");
+let lastFocus = null;
+function openPlayer(i) {
+  const p = CONFIG.projects[i]; lastFocus = document.activeElement;
+  $("#pTag").textContent = tc(p.length);
+  $("#pTitle").textContent = p.title;
+  $("#pDesc").textContent = p.desc;
+  $("#pframe").innerHTML = p.src
+    ? `<video src="${p.src}" controls autoplay playsinline loop></video>`
+    : `<div class="poster" style="${posterStyle(p.hue)}"></div><div class="pnote">sample frame. add your mp4 link in CONFIG to play it here.</div>`;
+  modal.hidden = false; document.body.style.overflow = "hidden";
+  $("#closeBtn").focus();
+}
+function closePlayer() {
+  modal.hidden = true; $("#pframe").innerHTML = ""; document.body.style.overflow = "";
+  if (lastFocus) lastFocus.focus();
+}
+grid.addEventListener("click", (e) => { const c = e.target.closest(".card"); if (c) openPlayer(+c.dataset.i); });
+$("#closeBtn").addEventListener("click", closePlayer);
+modal.addEventListener("click", (e) => { if (e.target === modal) closePlayer(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) closePlayer(); });
+
+/* bottom timeline follows scroll */
+$("#clips").innerHTML = CONFIG.projects.map(() => "<i></i>").join("");
+const clipEls = [...document.querySelectorAll("#clips i")];
+const head = $("#head"), track = document.querySelector(".track");
+function onScroll() {
+  const max = document.documentElement.scrollHeight - innerHeight;
+  const r = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+  head.style.left = (r * (track.clientWidth - 2)) + "px";
+  const total = CONFIG.projects.reduce((a, p) => a + p.length, 0);
+  const t = r * total;
+  $("#tcNow").textContent = "00:" + pad(Math.floor(t / 60)) + ":" + pad(Math.floor(t % 60)) + ":" + pad(Math.floor((t % 1) * 24));
+  const idx = Math.min(clipEls.length - 1, Math.floor(r * clipEls.length));
+  clipEls.forEach((c, k) => c.classList.toggle("on", k === idx));
+}
+addEventListener("scroll", onScroll, { passive: true });
+addEventListener("resize", onScroll);
+onScroll();
+
+/* theme toggle */
+$("#themeBtn").addEventListener("click", () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+
+/* cursor follower and click cut-burst (mouse only) */
+const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (fine && !reduce) {
+  const cur = $("#cur"), tag = $("#curTag");
+  let mx = -100, my = -100, cx = -100, cy = -100;
+  addEventListener("mousemove", (e) => {
+    mx = e.clientX; my = e.clientY;
+    const t = e.target.closest ? e.target.closest("[data-cursor]") : null;
+    if (t) { tag.textContent = t.dataset.cursor; cur.classList.add("big"); } else cur.classList.remove("big");
+  });
+  document.addEventListener("mouseleave", () => { mx = my = -100; });
+  (function loop() {
+    cx += (mx - cx) * .22; cy += (my - cy) * .22;
+    cur.style.transform = `translate(${cx}px, ${cy}px)`;
+    requestAnimationFrame(loop);
+  })();
+  addEventListener("mousedown", () => cur.classList.add("down"));
+  addEventListener("mouseup", () => cur.classList.remove("down"));
+  addEventListener("click", (e) => {
+    const b = document.createElement("div");
+    b.className = "burst"; b.style.left = e.clientX + "px"; b.style.top = e.clientY + "px";
+    let h = "";
+    for (let i = 0; i < 9; i++) {
+      const a = (Math.PI * 2 * i) / 9, d = 26 + Math.random() * 26;
+      h += `<i style="--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d}px;--r:${Math.random() * 180}deg"></i>`;
+    }
+    const inHero = hero.contains(e.target);
+    b.innerHTML = h + (inHero ? "<b>cut</b>" : "");
+    document.body.appendChild(b);
+    setTimeout(() => b.remove(), 800);
+  });
+}
+</script>
+
+</body></html>
